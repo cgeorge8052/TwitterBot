@@ -7,7 +7,7 @@ import os
 import re
 
 load_dotenv()
-token = os.getenv('DISCORD_TOKEN')
+token = os.getenv('RAILWAY_TOKEN')
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix='!', intents=intents)
@@ -69,6 +69,37 @@ async def check_tweets():
                         f"<@&{ANNOUNCE_ROLE_ID}> **New tweet from Goddess:**\n{fx_link}"
                     )
 
+@bot.command()
+async def get_latest_tweet(ctx, username: str = None):
+    """Manually fetch and post the latest tweet. Usage: !latest_tweet [username]"""
+    if username is None:
+        if len(TWITTER_ACCOUNTS) == 1:
+            username = TWITTER_ACCOUNTS[0]
+        else:
+            await ctx.send(f"Please specify a username. Tracked accounts: {', '.join(TWITTER_ACCOUNTS)}")
+            return
+
+    url = NITTER_RSS_URL.format(username=username)
+    feed = feedparser.parse(url)
+
+    if not feed.entries:
+        await ctx.send(f"⚠️ Could not fetch tweets for @{username} (instance may be down).")
+        return
+
+    latest_entry = feed.entries[0]
+
+    match = re.search(r"/(\w+)/status/(\d+)", latest_entry.link)
+    if match:
+        tweet_username, tweet_id = match.groups()
+        fx_link = f"https://fxtwitter.com/{tweet_username}/status/{tweet_id}"
+    else:
+        fx_link = latest_entry.link
+
+    channel = ctx.guild.get_channel(ANNOUNCE_CHANNEL_ID)
+    if channel:
+        await channel.send(
+            f"<@&{ANNOUNCE_ROLE_ID}> **New tweet from Goddess:**\n{fx_link}"
+        )
 
 @bot.event
 async def on_ready():
