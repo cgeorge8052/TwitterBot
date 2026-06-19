@@ -15,7 +15,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 # Map of twitter username -> last seen tweet ID
 SEEN_TWEETS_FILE = "seen_tweets.json"
 TWITTER_ACCOUNTS = ["WorshipMyra_"]  # usernames to track, no @
-ANNOUNCE_CHANNEL = "🍸⫽social-posts"
+ANNOUNCE_CHANNEL_ID = 1512486304959430746
 ANNOUNCE_ROLE_ID = 1517643198804136017
 CHECK_INTERVAL_MINUTES = 1
 
@@ -63,7 +63,7 @@ async def check_tweets():
             save_seen(seen)
 
             for guild in bot.guilds:
-                channel = discord.utils.get(guild.text_channels, name=ANNOUNCE_CHANNEL)
+                channel = guild.get_channel(ANNOUNCE_CHANNEL_ID)
                 if channel:
                     await channel.send(
                         f"<@&{ANNOUNCE_ROLE_ID}> **New tweet from Goddess:**\n{fx_link}"
