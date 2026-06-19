@@ -7,7 +7,7 @@ import os
 import re
 
 load_dotenv()
-token = os.getenv('RAILWAY_TOKEN')
+token = os.getenv('DISCORD_TOKEN')
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix='!', intents=intents)
@@ -16,7 +16,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 SEEN_TWEETS_FILE = "seen_tweets.json"
 TWITTER_ACCOUNTS = ["WorshipMyra_"]  # usernames to track, no @
 ANNOUNCE_CHANNEL = "🍸⫽social-posts"
-ANNOUNCE_ROLE_NAME = "socials"
+ANNOUNCE_ROLE_ID = 1517643198804136017
 CHECK_INTERVAL_MINUTES = 1
 
 # Nitter RSS bridge — replace with a currently-working public instance
@@ -64,10 +64,9 @@ async def check_tweets():
 
             for guild in bot.guilds:
                 channel = discord.utils.get(guild.text_channels, name=ANNOUNCE_CHANNEL)
-                role = discord.utils.get(guild.roles, name=ANNOUNCE_ROLE_NAME)
                 if channel:
                     await channel.send(
-                        f"**New tweet from Goddess {role.mention} :**\n{fx_link}"
+                        f"<@&{ANNOUNCE_ROLE_ID}> **New tweet from Goddess:**\n{fx_link}"
                     )
 
 
