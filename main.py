@@ -18,7 +18,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 SEEN_TWEETS_FILE = "seen_tweets.json"
 TWITTER_ACCOUNTS = ["betaboiforAL"]  # usernames to track, no @
 ANNOUNCE_CHANNEL_ID = 1512486304959430746
-ANNOUNCE_ROLE_ID = 1517643198804136017
+ANNOUNCE_ROLE_ID = 1511368065365840053
 CHECK_INTERVAL_MINUTES = 3
 
 # Nitter RSS bridge — replace with a currently-working public instance
