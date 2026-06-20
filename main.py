@@ -16,7 +16,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 # Map of twitter username -> last seen tweet ID
 SEEN_TWEETS_FILE = "seen_tweets.json"
-TWITTER_ACCOUNTS = ["betaboiforAL"]  # usernames to track, no @
+TWITTER_ACCOUNTS = ["WorshipMyra_"]  # usernames to track, no @
 ANNOUNCE_CHANNEL_ID = 1512486304959430746
 ANNOUNCE_ROLE_ID = 1511368065365840053
 CHECK_INTERVAL_MINUTES = 3
