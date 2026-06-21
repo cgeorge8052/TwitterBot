@@ -105,12 +105,11 @@ async def check_tweets():
             else:
                 fx_link = latest_entry.link
 
-            for guild in bot.guilds:
-                channel = guild.get_channel(ANNOUNCE_CHANNEL_ID)
-                if channel:
-                    await channel.send(
-                        f"<@&{ANNOUNCE_ROLE_ID}> **New tweet from Goddess:**\n{fx_link}"
-                    )
+            channel = bot.guild.get_channel(ANNOUNCE_CHANNEL_ID)
+            if channel:
+                await channel.send(
+                    f"<@&{ANNOUNCE_ROLE_ID}> **New tweet from Goddess:**\n{fx_link}"
+                )
         elif is_new_id and not is_newer_pubdate:
             print(f"⚠️ Skipped {username}: new ID but older/equal pubDate ({latest_pubdate} <= {old_pubdate}). Possible stale Nitter data.")
 
