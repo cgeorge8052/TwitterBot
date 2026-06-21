@@ -19,7 +19,7 @@ SEEN_TWEETS_FILE = "seen_tweets.json"
 TWITTER_ACCOUNTS = ["WorshipMyra_"]  # usernames to track, no @
 ANNOUNCE_CHANNEL_ID = 1512486304959430746
 ANNOUNCE_ROLE_ID = 1511368065365840053
-CHECK_INTERVAL_MINUTES = 3
+CHECK_INTERVAL_MINUTES = 10
 
 # Nitter RSS bridge — replace with a currently-working public instance
 # or self-host your own Nitter instance for reliability
@@ -36,6 +36,13 @@ def load_seen():
 def save_seen(data):
     with open(SEEN_TWEETS_FILE, "w") as f:
         json.dump(data, f, indent=4)
+
+def extract_tweet_id(entry):
+    """Pull the numeric tweet ID directly from the link, ignoring RSS guid quirks."""
+    match = re.search(r"/status/(\d+)", entry.link)
+    if match:
+        return match.group(1)
+    return entry.get("id", entry.link)  # fallback if regex fails
 
 def parse_pubdate(entry):
     """Parse the pubDate from a feed entry into a timezone-aware datetime."""
@@ -63,11 +70,10 @@ async def check_tweets():
             continue
 
         latest_entry = feed.entries[0]
-        latest_id = latest_entry.get("id", latest_entry.link)
+        latest_id = extract_tweet_id(latest_entry)
         latest_pubdate = parse_pubdate(latest_entry)
 
         stored = seen.get(username, {})
-        # Support both old format (string) and new format (dict) for backward compatibility
         if isinstance(stored, str):
             stored = {"id": stored, "pubdate": None}
 
@@ -76,8 +82,13 @@ async def check_tweets():
         old_pubdate = datetime.fromisoformat(old_pubdate_str) if old_pubdate_str else None
 
         is_new_id = old_id != latest_id
-        is_newer_pubdate = True
-        if old_pubdate and latest_pubdate:
+
+        if old_pubdate is None or latest_pubdate is None:
+            # Can't verify freshness, but log it so you can spot pattern issues
+            is_newer_pubdate = True
+            print(
+                f"⚠️ Missing pubDate for {username} (old={old_pubdate}, new={latest_pubdate}) — proceeding on ID match alone.")
+        else:
             is_newer_pubdate = latest_pubdate > old_pubdate
 
         if is_new_id and is_newer_pubdate:
