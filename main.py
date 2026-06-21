@@ -57,6 +57,18 @@ def parse_pubdate(entry):
         print(f"Failed to parse pubDate: {e}")
     return None
 
+async def already_posted(channel, fx_link, limit=50):
+    """Check if this tweet link was already posted in the channel's recent history."""
+    try:
+        async for msg in channel.history(limit=limit):
+            if fx_link in msg.content:
+                return True
+    except discord.Forbidden:
+        print(f"Missing permission to read history in #{channel.name}")
+    except discord.HTTPException as e:
+        print(f"Failed to fetch channel history: {e}")
+    return False
+
 @tasks.loop(minutes=CHECK_INTERVAL_MINUTES)
 async def check_tweets():
     seen = load_seen()
@@ -105,11 +117,17 @@ async def check_tweets():
             else:
                 fx_link = latest_entry.link
 
-            channel = bot.guild.get_channel(ANNOUNCE_CHANNEL_ID)
-            if channel:
-                await channel.send(
-                    f"<@&{ANNOUNCE_ROLE_ID}> **New tweet from Goddess:**\n{fx_link}"
-                )
+            for guild in bot.guilds:
+                channel = guild.get_channel(ANNOUNCE_CHANNEL_ID)
+                if channel:
+                    if await already_posted(channel, fx_link):
+                        print(f"Skipped posting {fx_link} — already found in #{channel.name} history.")
+                        continue
+
+                    await channel.send(
+                        f"<@&{ANNOUNCE_ROLE_ID}> **New tweet from Goddess:**\n{fx_link}"
+                    )
+                    
         elif is_new_id and not is_newer_pubdate:
             print(f"⚠️ Skipped {username}: new ID but older/equal pubDate ({latest_pubdate} <= {old_pubdate}). Possible stale Nitter data.")
 
